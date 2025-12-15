@@ -4,9 +4,6 @@
 <meta charset="UTF-8">
 <title>Web Emulator</title>
 
-<!-- EmulatorJS loader -->
-<script src="https://cdn.emulatorjs.org/stable/data/loader.js"></script>
-
 <style>
 body {
   margin: 0;
@@ -51,7 +48,6 @@ select, input, button {
   </select>
 
   <input type="file" id="rom" />
-
   <button onclick="goFullscreen()">Fullscreen</button>
 </div>
 
@@ -67,17 +63,28 @@ document.getElementById("rom").addEventListener("change", function(e) {
   const file = e.target.files[0];
   if (!file) return;
 
+  // Clear old emulator
+  document.getElementById("game").innerHTML = "";
+
   const url = URL.createObjectURL(file);
   const system = document.getElementById("system").value;
 
-  document.getElementById("game").innerHTML = "";
-
+  // EmulatorJS config (MUST be set BEFORE loading script)
   window.EJS_player = "#game";
   window.EJS_gameUrl = url;
   window.EJS_core = system;
   window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
   window.EJS_startOnLoaded = true;
-  window.EJS_fullscreenOnLoad = false;
+
+  // Remove old loader if exists
+  const oldScript = document.getElementById("ejs");
+  if (oldScript) oldScript.remove();
+
+  // Load EmulatorJS AFTER config
+  const script = document.createElement("script");
+  script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
+  script.id = "ejs";
+  document.body.appendChild(script);
 });
 </script>
 
