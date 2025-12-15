@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Retro Emulator</title>
@@ -7,89 +7,53 @@
 <style>
 body {
   margin: 0;
-  background: #0b0b0b;
-  color: #00ffcc;
-  font-family: monospace;
+  background: black;
+  color: white;
+  font-family: Arial, sans-serif;
   text-align: center;
 }
 
 header {
-  padding: 12px;
-  font-size: 22px;
-  background: #111;
-  border-bottom: 2px solid #00ffcc;
-}
-
-#tabs button {
-  background: #111;
-  color: #00ffcc;
-  border: 1px solid #00ffcc;
-  padding: 8px 14px;
-  margin: 4px;
-  cursor: pointer;
-}
-
-#controls {
   padding: 10px;
+  background: #111;
 }
 
-input, button {
+select, input, button {
   padding: 8px;
   margin: 6px;
-  font-size: 15px;
+  font-size: 16px;
 }
 
 #game {
   width: 100%;
-  height: 75vh;
+  height: 80vh;
 }
 </style>
 </head>
 
 <body>
 
-<header>🕹 Retro Emulator</header>
+<header>
+  <h2>🎮 Retro Emulator</h2>
+</header>
 
-<div id="tabs">
-  <button onclick="setSystem('nes')">NES</button>
-  <button onclick="setSystem('snes')">SNES</button>
-  <button onclick="setSystem('gba')">GBA</button>
-</div>
+<div>
+  <select id="system">
+    <option value="nes">NES</option>
+    <option value="snes">SNES</option>
+    <option value="gba">GBA</option>
+  </select>
 
-<div id="controls">
   <input type="file" id="rom">
-  <button onclick="saveState()">Save</button>
-  <button onclick="loadState()">Load</button>
   <button onclick="goFullscreen()">Fullscreen</button>
 </div>
 
 <div id="game"></div>
 
 <script>
-let currentSystem = "nes";
-
-function setSystem(sys) {
-  currentSystem = sys;
-  alert("Selected: " + sys.toUpperCase());
-}
-
 function goFullscreen() {
   const el = document.getElementById("game");
   if (el.requestFullscreen) el.requestFullscreen();
-}
-
-function saveState() {
-  if (window.EJS_emulator) {
-    window.EJS_emulator.saveState();
-    alert("State Saved!");
-  }
-}
-
-function loadState() {
-  if (window.EJS_emulator) {
-    window.EJS_emulator.loadState();
-    alert("State Loaded!");
-  }
 }
 
 document.getElementById("rom").addEventListener("change", function(e) {
@@ -99,27 +63,27 @@ document.getElementById("rom").addEventListener("change", function(e) {
   document.getElementById("game").innerHTML = "";
 
   const url = URL.createObjectURL(file);
+  const system = document.getElementById("system").value;
 
+  // EmulatorJS config (MUST be before loader)
   window.EJS_player = "#game";
   window.EJS_gameUrl = url;
-  window.EJS_core = currentSystem;
+  window.EJS_core = system;
   window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
   window.EJS_startOnLoaded = true;
-  window.EJS_fullscreenOnLoad = true;
 
   // 🔊 SOUND ENABLED
   window.EJS_muteOnStart = false;
-
-  // 🎮 Controllers + multiplayer
-  window.EJS_multitap = true;
 
   // NES stability
   window.EJS_biosUrl = "";
   window.EJS_disableDatabases = true;
 
+  // Remove old loader
   const old = document.getElementById("ejs");
   if (old) old.remove();
 
+  // Load EmulatorJS
   const script = document.createElement("script");
   script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
   script.id = "ejs";
