@@ -2,32 +2,68 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>🎮 Retro Emulator</title>
+<title>🎮 Retro Pixel Emulator</title>
 
 <style>
+/* Retro Pixel Theme */
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
 body {
   margin: 0;
-  background: black;
-  color: white;
-  font-family: Arial, sans-serif;
+  background: #0f0f0f;
+  color: #00ff00;
+  font-family: 'Press Start 2P', monospace;
   text-align: center;
 }
 
 header {
-  padding: 10px;
-  background: #111;
+  padding: 15px;
+  background: #000;
+  border-bottom: 4px solid #00ff00;
 }
 
 select, input, button {
-  padding: 8px;
+  padding: 10px;
   margin: 6px;
-  font-size: 16px;
+  font-size: 14px;
+  background: #111;
+  color: #00ff00;
+  border: 2px solid #00ff00;
+  cursor: pointer;
+}
+
+select:hover, input:hover, button:hover {
+  background: #00ff00;
+  color: #000;
 }
 
 #game {
   width: 100%;
-  height: 80vh;
+  height: 65vh;
   background: black;
+  border: 4px solid #00ff00;
+  margin-top: 10px;
+}
+
+#controls {
+  margin-top: 10px;
+}
+
+input[type=range] {
+  -webkit-appearance: none;
+  width: 200px;
+  height: 8px;
+  background: #111;
+  border: 2px solid #00ff00;
+  margin: 10px;
+}
+
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px;
+  height: 20px;
+  background: #00ff00;
+  cursor: pointer;
 }
 </style>
 </head>
@@ -35,7 +71,7 @@ select, input, button {
 <body>
 
 <header>
-  <h2>🎮 Retro Emulator</h2>
+  <h2>🎮 Retro Pixel Emulator</h2>
 </header>
 
 <div>
@@ -55,13 +91,21 @@ select, input, button {
   <input type="file" id="rom" accept=".nes,.sfc,.smc,.gba,.gb,.gbc,.bin,.iso,.n64">
   <button onclick="goFullscreen()">Fullscreen</button>
   <button onclick="muteUnmute()">Mute/Unmute</button>
+  <br>
+  Volume: <input type="range" id="volumeSlider" min="0" max="100" value="100">
 </div>
 
 <div id="game"></div>
 
+<div id="controls">
+  <button onclick="saveState()">💾 Save State</button>
+  <button onclick="loadState()">📂 Load State</button>
+</div>
+
 <script>
 let currentScript = null;
 let muted = false;
+let currentROMName = null;
 
 function goFullscreen() {
   const el = document.getElementById("game");
@@ -70,48 +114,79 @@ function goFullscreen() {
 
 function muteUnmute() {
   muted = !muted;
-  if (window.EJS_playerInstance) {
-    window.EJS_playerInstance.mute(muted);
+  if (window.EJS_playerInstance && typeof window.EJS_playerInstance.setVolume === 'function') {
+    window.EJS_playerInstance.setVolume(muted ? 0 : 1);
   }
+}
+
+document.getElementById('volumeSlider').addEventListener('input', function() {
+  const volume = this.value / 100;
+  if (window.EJS_playerInstance && typeof window.EJS_playerInstance.setVolume === 'function') {
+    window.EJS_playerInstance.setVolume(volume);
+  }
+});
+
+function saveState() {
+  if (window.EJS_playerInstance && typeof window.EJS_playerInstance.saveState === 'function') {
+    const state = window.EJS_playerInstance.saveState();
+    if (currentROMName) localStorage.setItem("emulatorState_" + currentROMName, state);
+    alert("✅ State saved for " + currentROMName);
+  } else alert("⚠️ Unable to save state.");
+}
+
+function loadState() {
+  if (window.EJS_playerInstance && typeof window.EJS_playerInstance.loadState === 'function') {
+    if (currentROMName) {
+      const state = localStorage.getItem("emulatorState_" + currentROMName);
+      if (state) window.EJS_playerInstance.loadState(state);
+      else alert("⚠️ No saved state found for this ROM.");
+    }
+  } else alert("⚠️ Unable to load state.");
+}
+
+function loadEmulatorJS(url, system) {
+  window.EJS_player = "#game";
+  window.EJS_gameUrl = url;
+  window.EJS_core = system;
+  window.EJS_pathtodata = "./data/"; // Use local relative path for WASM
+  window.EJS_startOnLoaded = true;
+  window.EJS_muteOnStart = muted;
+  window.EJS_biosUrl = "";
+  window.EJS_disableDatabases = true;
+
+  if (currentScript) currentScript.remove();
+
+  const script = document.createElement("script");
+  script.src = "./loader.js"; // Use local loader.js to ensure WASM can be fetched
+  script.id = "ejs";
+  script.onload = () => {
+    if (window.EmulatorJS) {
+      window.EJS_playerInstance = window.EmulatorJS;
+      if (typeof window.EmulatorJS.start === 'function') {
+        window.EmulatorJS.start().catch(err => console.error('EmulatorJS failed to start:', err));
+      }
+    }
+  };
+  currentScript = script;
+  document.body.appendChild(script);
 }
 
 document.getElementById("rom").addEventListener("change", function(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  // Stop previous game
+  currentROMName = file.name;
+
   if (window.EJS_playerInstance && typeof window.EJS_playerInstance.destroy === "function") {
     window.EJS_playerInstance.destroy();
   }
-  
+
   document.getElementById("game").innerHTML = "";
 
   const url = URL.createObjectURL(file);
   const system = document.getElementById("system").value;
 
-  // EmulatorJS configuration
-  window.EJS_player = "#game";
-  window.EJS_gameUrl = url;
-  window.EJS_core = system;
-  window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
-  window.EJS_startOnLoaded = true;
-  window.EJS_muteOnStart = muted;
-  window.EJS_biosUrl = "";
-  window.EJS_disableDatabases = true;
-
-  // Remove previous script
-  if (currentScript) currentScript.remove();
-
-  // Load EmulatorJS
-  const script = document.createElement("script");
-  script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
-  script.id = "ejs";
-  script.onload = () => {
-    // Reference the player instance for controlling sound
-    window.EJS_playerInstance = window.EmulatorJS || null;
-  };
-  currentScript = script;
-  document.body.appendChild(script);
+  loadEmulatorJS(url, system);
 });
 </script>
 
