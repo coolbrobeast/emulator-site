@@ -4,105 +4,109 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Retro Emulator Hub</title>
-<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 <style>
   body {
     margin: 0;
-    background: #0d0d0d;
-    color: #00ff00;
+    background: black;
+    color: white;
     font-family: 'Press Start 2P', monospace;
     text-align: center;
   }
-  header {
-    padding: 1rem;
-    background: #111;
-    border-bottom: 2px solid #00ff00;
+  h1 {
+    padding: 20px;
+    font-size: 1.5em;
+    color: #00ff00;
+    text-shadow: 0 0 5px #00ff00;
   }
-  .console-btn {
-    margin: 0.5rem;
-    padding: 0.5rem 1rem;
-    border: 2px solid #00ff00;
-    background:#111;
-    color:#00ff00;
-    cursor:pointer;
-  }
-  .console-btn:hover {
-    background:#00ff00;
-    color:#111;
-  }
-  #game {
-    width: 80vw;
-    height: 60vh;
-    border:2px solid #00ff00;
-    margin-top:1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  #emulator-container {
+    margin: 0 auto;
+    width: 640px;
+    height: 480px;
     background: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  input[type="file"] {
+    margin: 20px;
+    color: white;
+  }
+  button {
+    padding: 10px 20px;
+    font-family: monospace;
+    margin: 5px;
+    cursor: pointer;
+    background: #111;
+    color: #0f0;
+    border: 2px solid #0f0;
+  }
+  button:hover {
+    background: #0f0;
+    color: #000;
   }
 </style>
 </head>
 <body>
 
-<header><h1>Retro Emulator Hub</h1></header>
-
-<p>Upload a ROM to play:</p>
-<input type="file" id="romFile" accept=".zip,.nes,.sfc,.gba,.gb,.gba,.bin,.iso,.z64,.v64" onchange="autoStartEmu()" />
+<h1>Retro Emulator Hub</h1>
 
 <div>
-  <button class="console-btn" onclick="startEmu('nes')">NES</button>
-  <button class="console-btn" onclick="startEmu('snes')">SNES</button>
-  <button class="console-btn" onclick="startEmu('gba')">GBA</button>
-  <button class="console-btn" onclick="startEmu('n64')">N64</button>
-  <button class="console-btn" onclick="startEmu('psx')">PSX</button>
-  <button class="console-btn" onclick="startEmu('gb')">Game Boy</button>
-  <button class="console-btn" onclick="startEmu('genesis')">Genesis</button>
-  <button class="console-btn" onclick="startEmu('sms')">Sega Master System</button>
-  <button class="console-btn" onclick="startEmu('gg')">Game Gear</button>
+  <input type="file" id="rom-input" accept=".nes,.sfc,.smc,.gb,.gbc,.gba,.bin,.zip" />
+  <button onclick="startEmulator()">Play ROM</button>
 </div>
 
-<div id="game">
-  <p style="color:#00ff00;">Upload a ROM or select a console above to start.</p>
+<div id="emulator-container">
+  <p id="message">Upload a ROM to start playing!</p>
 </div>
 
+<!-- EmulatorJS -->
+<script src="https://cdn.jsdelivr.net/gh/emulatorjs/emulatorjs@latest/dist/emulator.min.js"></script>
 <script>
-// Auto-start when uploading a ROM
-function autoStartEmu() {
-  const file = document.getElementById("romFile").files[0];
-  if (!file) return;
+let emulator;
 
-  // Ask for console type
-  const consoleType = prompt("Enter console type (nes, snes, gba, n64, psx, gb, genesis, sms, gg)", "nes");
-  if (!consoleType) return;
-
-  startEmu(consoleType, file);
-}
-
-// Start emulator with optional file
-function startEmu(core, file = null) {
-  let romURL = null;
-  if (file) {
-    romURL = URL.createObjectURL(file);
-  } else {
-    alert("Select a ROM first or use the file upload.");
+function startEmulator() {
+  const fileInput = document.getElementById('rom-input');
+  if (!fileInput.files.length) {
+    alert('Please upload a ROM file!');
     return;
   }
 
-  // Remove previous loader if exists
-  const oldScript = document.querySelector('script[data-emulatorjs-loader]');
-  if (oldScript) oldScript.remove();
+  const file = fileInput.files[0];
+  const reader = new FileReader();
 
-  // EmulatorJS config
-  window.EJS_player  = "#game";
-  window.EJS_gameUrl = romURL;
-  window.EJS_core    = core;
-  window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+  reader.onload = function(e) {
+    const data = e.target.result;
 
-  // Load EmulatorJS loader
-  const script = document.createElement("script");
-  script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
-  script.setAttribute("data-emulatorjs-loader", "true");
-  document.body.appendChild(script);
+    // Remove old emulator if exists
+    if (emulator) {
+      emulator.stop();
+      document.getElementById('emulator-container').innerHTML = '';
+    }
+
+    // Detect console from file extension
+    let type = '';
+    const ext = file.name.split('.').pop().toLowerCase();
+    switch(ext) {
+      case 'nes': type = 'nes'; break;
+      case 'sfc':
+      case 'smc': type = 'snes'; break;
+      case 'gb': type = 'gb'; break;
+      case 'gbc': type = 'gbc'; break;
+      case 'gba': type = 'gba'; break;
+      default:
+        alert('Unsupported ROM format!');
+        return;
+    }
+
+    emulator = new EmulatorJS({
+      type: type,
+      rom: data,
+      parent: document.getElementById('emulator-container'),
+      autoplay: true
+    });
+  };
+
+  reader.readAsArrayBuffer(file);
 }
 </script>
 
