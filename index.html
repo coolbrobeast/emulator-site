@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Retro Emulator</title>
+<title>🎮 Retro Emulator</title>
 
 <style>
 body {
@@ -27,6 +27,7 @@ select, input, button {
 #game {
   width: 100%;
   height: 80vh;
+  background: black;
 }
 </style>
 </head>
@@ -42,51 +43,74 @@ select, input, button {
     <option value="nes">NES</option>
     <option value="snes">SNES</option>
     <option value="gba">GBA</option>
+    <option value="gb">GB</option>
+    <option value="gbc">GBC</option>
+    <option value="genesis">Genesis</option>
+    <option value="sms">Master System</option>
+    <option value="pce">PC Engine</option>
+    <option value="psx">PS1</option>
+    <option value="n64">N64</option>
   </select>
 
-  <input type="file" id="rom">
+  <input type="file" id="rom" accept=".nes,.sfc,.smc,.gba,.gb,.gbc,.bin,.iso,.n64">
   <button onclick="goFullscreen()">Fullscreen</button>
+  <button onclick="muteUnmute()">Mute/Unmute</button>
 </div>
 
 <div id="game"></div>
 
 <script>
+let currentScript = null;
+let muted = false;
+
 function goFullscreen() {
   const el = document.getElementById("game");
   if (el.requestFullscreen) el.requestFullscreen();
+}
+
+function muteUnmute() {
+  muted = !muted;
+  if (window.EJS_playerInstance) {
+    window.EJS_playerInstance.mute(muted);
+  }
 }
 
 document.getElementById("rom").addEventListener("change", function(e) {
   const file = e.target.files[0];
   if (!file) return;
 
+  // Stop previous game
+  if (window.EJS_playerInstance && typeof window.EJS_playerInstance.destroy === "function") {
+    window.EJS_playerInstance.destroy();
+  }
+  
   document.getElementById("game").innerHTML = "";
 
   const url = URL.createObjectURL(file);
   const system = document.getElementById("system").value;
 
-  // EmulatorJS config (MUST be before loader)
+  // EmulatorJS configuration
   window.EJS_player = "#game";
   window.EJS_gameUrl = url;
   window.EJS_core = system;
   window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
   window.EJS_startOnLoaded = true;
-
-  // 🔊 SOUND ENABLED
-  window.EJS_muteOnStart = false;
-
-  // NES stability
+  window.EJS_muteOnStart = muted;
   window.EJS_biosUrl = "";
   window.EJS_disableDatabases = true;
 
-  // Remove old loader
-  const old = document.getElementById("ejs");
-  if (old) old.remove();
+  // Remove previous script
+  if (currentScript) currentScript.remove();
 
   // Load EmulatorJS
   const script = document.createElement("script");
   script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
   script.id = "ejs";
+  script.onload = () => {
+    // Reference the player instance for controlling sound
+    window.EJS_playerInstance = window.EmulatorJS || null;
+  };
+  currentScript = script;
   document.body.appendChild(script);
 });
 </script>
