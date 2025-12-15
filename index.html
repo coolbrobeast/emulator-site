@@ -163,28 +163,26 @@ function unlockAudio() {
 document.addEventListener('click', unlockAudio);
 document.addEventListener('keydown', unlockAudio);
 
-// Updated Fullscreen to ensure it triggers only on user gesture
+// Fullscreen button only works in secure contexts and with user gesture
 document.getElementById('fullscreen-btn').addEventListener('click', function() {
     const el = document.getElementById("game");
-    try {
-        if(el.requestFullscreen) el.requestFullscreen();
-        else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
-        else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-        else if(el.msRequestFullscreen) el.msRequestFullscreen();
-    } catch(e) {
-        console.warn('Fullscreen request blocked by browser permissions policy.', e);
-        alert('Fullscreen not allowed in this environment.');
+    const requestFS = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
+    if(requestFS) {
+        requestFS.call(el).catch(e => {
+            console.warn('Fullscreen blocked:', e);
+            alert('Fullscreen not allowed.');
+        });
     }
 });
 
 const BIOS_URLS = {
-    psx: "https://cdn.emulatorjs.org/stable/data/bios/psx_bios.bin",
-    gba: "https://cdn.emulatorjs.org/stable/data/bios/gba_bios.bin",
-    n64: "https://cdn.emulatorjs.org/stable/data/bios/n64_bios.bin",
-    neogeo: "https://cdn.emulatorjs.org/stable/data/bios/neogeo.zip"
+    psx: "https://cdn.jsdelivr.net/npm/emulatorjs@latest/data/bios/psx_bios.bin",
+    gba: "https://cdn.jsdelivr.net/npm/emulatorjs@latest/data/bios/gba_bios.bin",
+    n64: "https://cdn.jsdelivr.net/npm/emulatorjs@latest/data/bios/n64_bios.bin",
+    neogeo: "https://cdn.jsdelivr.net/npm/emulatorjs@latest/data/bios/neogeo.zip"
 };
 
-// Load ROM
+// Load ROM using EmulatorJS loader from official CDN
 document.getElementById("rom").addEventListener("change", function(e){
     const file = e.target.files[0];
     if(!file) return;
@@ -197,19 +195,22 @@ document.getElementById("rom").addEventListener("change", function(e){
 
     if(audioUnlocked) audio.play().catch(()=>{});
 
+    // Remove previous loader if exists
     const oldScript = document.getElementById("ejs");
     if(oldScript) oldScript.remove();
 
+    // Configure EmulatorJS globals
     window.EJS_player = "#game";
     window.EJS_gameUrl = url;
     window.EJS_core = system;
-    window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+    window.EJS_pathtodata = "https://cdn.jsdelivr.net/npm/emulatorjs@latest/data/";
     window.EJS_startOnLoaded = true;
     window.EJS_disableDatabases = true;
     window.EJS_biosUrl = BIOS_URLS[system] || "";
 
+    // Append loader.js from official CDN
     const script = document.createElement("script");
-    script.src = "https://cdn.emulatorjs.org/stable/loader.js";
+    script.src = "https://cdn.jsdelivr.net/npm/emulatorjs@latest/loader.js";
     script.id = "ejs";
     document.body.appendChild(script);
 });
