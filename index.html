@@ -1,77 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Retro Emulator</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Test EmulatorJS</title>
 
 <style>
 body {
-  margin: 0;
   background: black;
-  color: lime;
-  font-family: monospace;
+  color: white;
   text-align: center;
 }
-
 #game {
   width: 640px;
   height: 480px;
-  margin: 20px auto;
-  border: 4px solid lime;
-}
-
-select, input {
+  margin: auto;
   background: black;
-  color: lime;
-  border: 2px solid lime;
-  padding: 5px;
-  margin: 5px;
 }
 </style>
 </head>
 
 <body>
 
-<h1>🕹 Retro Emulator</h1>
-
-<select id="system">
-  <option value="nes">NES</option>
-  <option value="snes">SNES</option>
-  <option value="gba">Game Boy Advance</option>
-  <option value="gb">Game Boy</option>
-  <option value="n64">Nintendo 64</option>
-  <option value="psx">PlayStation</option>
-  <option value="genesis">Genesis</option>
-</select>
-
-<input type="file" id="rom" />
-
+<h1>EmulatorJS Test</h1>
 <div id="game"></div>
 
 <script src="emulatorjs/loader.js"></script>
 
 <script>
-document.getElementById("rom").addEventListener("change", async function () {
-  const file = this.files[0];
-  if (!file) return;
+window.EJS_player = "#game";
+window.EJS_core = "nes";
+window.EJS_gameUrl = "mario.nes"; // MUST EXIST
+window.EJS_pathtodata = "emulatorjs/data/";
+window.EJS_startOnLoaded = true;
 
-  const system = document.getElementById("system").value;
-
-  // Clear previous emulator
-  document.getElementById("game").innerHTML = "";
-
-  const url = URL.createObjectURL(file);
-
-  window.EJS_player = "#game";
-  window.EJS_gameUrl = url;
-  window.EJS_core = system;
-  window.EJS_pathtodata = "emulatorjs/data/";
-  window.EJS_startOnLoaded = true;
-  window.EJS_volume = 1;
-
-  EJS_load();
-});
+EJS_load();
 </script>
 
 </body>
