@@ -3,9 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Retro Console Emulator Hub</title>
+<title>Ultimate Retro Arcade Hub</title>
 <style>
-/* Retro Theme Styling */
 body {
     background-color: #2c003e;
     color: #00ff41;
@@ -24,7 +23,7 @@ body {
 
 h1 {
     text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
-    margin-bottom: 30px;
+    margin-bottom: 20px;
     font-size: 1.8em;
     letter-spacing: 2px;
     animation: flicker 1.5s infinite alternate;
@@ -42,10 +41,10 @@ h1 {
     margin: 0 auto 25px auto;
     display: inline-block;
     border-radius: 5px;
-    max-width: 90%;
+    max-width: 95%;
 }
 
-label, button, select, input[type="file"] {
+label, select, input[type="file"], button {
     display: block;
     margin: 10px 0;
     color: #00ff41;
@@ -73,9 +72,8 @@ button {
     cursor: pointer;
     transition: background-color 0.2s;
     font-family: 'Press Start 2P', cursive, monospace;
-    margin-top: 20px;
+    margin-top: 10px;
 }
-
 button:hover {
     background-color: #00ff41;
     color: #2c003e;
@@ -89,27 +87,26 @@ button:hover {
     box-shadow: 0 0 20px #00ff41;
     background-color: #000;
     max-width: 95%;
+    position: relative;
 }
 
-input[type="file"]::-webkit-file-upload-button {
-    visibility: hidden;
+#rom-info {
+    font-size: 0.7em;
+    margin-top: 5px;
 }
+
+input[type="file"]::-webkit-file-upload-button { visibility: hidden; }
 input[type="file"]::before {
     content: 'Select ROM File';
     display: inline-block;
     background: #0d0014;
     border: 1px solid #00ff41;
     padding: 5px 8px;
-    outline: none;
-    white-space: nowrap;
     cursor: pointer;
     text-shadow: 1px 1px #000;
-    font-weight: 700;  
-    font-size: 0.8em;
+    font-weight: 700;
 }
-input[type="file"]:hover::before {
-    border-color: #00ff41;
-}
+input[type="file"]:hover::before { border-color: #00ff41; }
 </style>
 </head>
 <body>
@@ -119,45 +116,53 @@ input[type="file"]:hover::before {
     Your browser does not support the audio element.
 </audio>
 
-<h1>👾 RETRO ARCADE HUB 👾</h1>
+<h1>👾 ULTIMATE RETRO ARCADE HUB 👾</h1>
 
 <div class="controls">
     <label for="system">CHOOSE CONSOLE:</label>
     <select id="system">
-        <option value="nes">Nintendo Entertainment System (NES)</option>
-        <option value="snes">Super Nintendo (SNES)</option>
-        <option value="gb">Game Boy (GB)</option>
-        <option value="gba">Game Boy Advance (GBA)</option>
-        <option value="n64">Nintendo 64 (N64)</option>
-        <option value="psx">PlayStation 1 (PSX)</option>
-        <option value="sega-genesis">Sega Genesis/Mega Drive</option>
+        <option value="nes">NES</option>
+        <option value="snes">SNES</option>
+        <option value="gb">Game Boy</option>
+        <option value="gba">GBA</option>
+        <option value="n64">N64</option>
+        <option value="psx">PSX</option>
+        <option value="sega-genesis">Genesis/Mega Drive</option>
         <option value="atari2600">Atari 2600</option>
+        <option value="neogeo">NeoGeo</option>
+        <option value="gamegear">Game Gear</option>
+        <option value="mastersystem">Master System</option>
+        <option value="tg16">TurboGrafx-16</option>
+        <option value="c64">Commodore 64</option>
+        <option value="wonderswan">WonderSwan</option>
+        <option value="dosbox">DOS</option>
     </select>
-    
+
     <label for="rom">LOAD ROM:</label>
-    <input type="file" id="rom" accept=".nes,.smc,.gb,.gba,.n64,.bin,.gen,.a26">
-    
+    <input type="file" id="rom" accept=".nes,.smc,.sfc,.gb,.gba,.n64,.bin,.gen,.a26,.zip,.iso,.d64,.com,.exe">
+
     <button onclick="goFullscreen()">GO FULLSCREEN</button>
-    <button onclick="toggleAudio()">SOUND: OFF</button>
 </div>
 
-<div id="game">
-    <p>Emulator screen will appear here after loading a ROM...</p>
-</div>
+<div id="rom-info"></div>
+<div id="game"><p>Emulator screen will appear here after loading a ROM...</p></div>
 
 <script>
 const audio = document.getElementById("retro_audio");
-const audioButton = document.querySelector(".controls button:last-of-type");
+let audioUnlocked = false;
 
-function toggleAudio() {
-    if(audio.paused){
-        audio.play().then(()=>{ audioButton.textContent="SOUND: ON"; })
-        .catch(()=>{ alert("Click again to enable sound."); });
-    } else {
+// Unlock audio on first user gesture
+function unlockAudio() {
+    if(!audioUnlocked){
+        audio.play().catch(()=>{});
         audio.pause();
-        audioButton.textContent="SOUND: OFF";
+        audioUnlocked = true;
+        document.removeEventListener('click', unlockAudio);
+        document.removeEventListener('keydown', unlockAudio);
     }
 }
+document.addEventListener('click', unlockAudio);
+document.addEventListener('keydown', unlockAudio);
 
 function goFullscreen() {
     const el = document.getElementById("game");
@@ -167,39 +172,38 @@ function goFullscreen() {
     else if(el.msRequestFullscreen) el.msRequestFullscreen();
 }
 
-// ROM Loader
+// Load ROM
 document.getElementById("rom").addEventListener("change", function(e){
     const file = e.target.files[0];
     if(!file) return;
-    
+
     const system = document.getElementById("system").value;
     const url = URL.createObjectURL(file);
-    
+
     // Clear previous content
     document.getElementById("game").innerHTML = "";
-    
+    document.getElementById("rom-info").textContent = `Loaded: ${file.name} | System: ${system.toUpperCase()}`;
+
+    // Stop previous audio & start music if unlocked
+    if(audioUnlocked) audio.play().catch(()=>{});
+
     // Remove old loader script
     const oldScript = document.getElementById("ejs");
     if(oldScript) oldScript.remove();
-    
-    // Config
+
+    // EmulatorJS config
     window.EJS_player = "#game";
     window.EJS_gameUrl = url;
     window.EJS_core = system;
     window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
     window.EJS_startOnLoaded = true;
     window.EJS_disableDatabases = true;
-    
-    // BIOS URLs (fill in if needed for GBA/PSX/N64)
     window.EJS_biosUrl = "";
-    
-    // Load EmulatorJS
+
     const script = document.createElement("script");
     script.src = "https://cdn.emulatorjs.org/stable/loader.js";
     script.id = "ejs";
     document.body.appendChild(script);
-    
-    if(audio.paused) toggleAudio();
 });
 </script>
 
