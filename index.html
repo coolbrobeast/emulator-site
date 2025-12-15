@@ -139,9 +139,9 @@ input[type="file"]:hover::before { border-color: #00ff41; }
     </select>
 
     <label for="rom">LOAD ROM:</label>
-    <input type="file" id="rom" accept=".nes,.smc,.sfc,.gb,.gba,.n64,.bin,.gen,.a26,.zip,.iso,.d64,.com,.exe">
+    <input type="file" id="rom" accept=".nes,.smc,.sfc,.gb,.gba,.n64,.z64,.bin,.gen,.md,.a26,.zip,.gg,.sms,.pce,.d64,.prg,.ws,.exe,.com">
 
-    <button onclick="goFullscreen()">GO FULLSCREEN</button>
+    <button id="fullscreen-btn">GO FULLSCREEN</button>
 </div>
 
 <div id="rom-info"></div>
@@ -151,7 +151,6 @@ input[type="file"]:hover::before { border-color: #00ff41; }
 const audio = document.getElementById("retro_audio");
 let audioUnlocked = false;
 
-// Unlock audio on first user gesture
 function unlockAudio() {
     if(!audioUnlocked){
         audio.play().catch(()=>{});
@@ -164,13 +163,26 @@ function unlockAudio() {
 document.addEventListener('click', unlockAudio);
 document.addEventListener('keydown', unlockAudio);
 
-function goFullscreen() {
+// Updated Fullscreen to ensure it triggers only on user gesture
+document.getElementById('fullscreen-btn').addEventListener('click', function() {
     const el = document.getElementById("game");
-    if(el.requestFullscreen) el.requestFullscreen();
-    else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
-    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
-    else if(el.msRequestFullscreen) el.msRequestFullscreen();
-}
+    try {
+        if(el.requestFullscreen) el.requestFullscreen();
+        else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
+        else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+        else if(el.msRequestFullscreen) el.msRequestFullscreen();
+    } catch(e) {
+        console.warn('Fullscreen request blocked by browser permissions policy.', e);
+        alert('Fullscreen not allowed in this environment.');
+    }
+});
+
+const BIOS_URLS = {
+    psx: "https://cdn.emulatorjs.org/stable/data/bios/psx_bios.bin",
+    gba: "https://cdn.emulatorjs.org/stable/data/bios/gba_bios.bin",
+    n64: "https://cdn.emulatorjs.org/stable/data/bios/n64_bios.bin",
+    neogeo: "https://cdn.emulatorjs.org/stable/data/bios/neogeo.zip"
+};
 
 // Load ROM
 document.getElementById("rom").addEventListener("change", function(e){
@@ -180,25 +192,21 @@ document.getElementById("rom").addEventListener("change", function(e){
     const system = document.getElementById("system").value;
     const url = URL.createObjectURL(file);
 
-    // Clear previous content
     document.getElementById("game").innerHTML = "";
     document.getElementById("rom-info").textContent = `Loaded: ${file.name} | System: ${system.toUpperCase()}`;
 
-    // Stop previous audio & start music if unlocked
     if(audioUnlocked) audio.play().catch(()=>{});
 
-    // Remove old loader script
     const oldScript = document.getElementById("ejs");
     if(oldScript) oldScript.remove();
 
-    // EmulatorJS config
     window.EJS_player = "#game";
     window.EJS_gameUrl = url;
     window.EJS_core = system;
     window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
     window.EJS_startOnLoaded = true;
     window.EJS_disableDatabases = true;
-    window.EJS_biosUrl = "";
+    window.EJS_biosUrl = BIOS_URLS[system] || "";
 
     const script = document.createElement("script");
     script.src = "https://cdn.emulatorjs.org/stable/loader.js";
