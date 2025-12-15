@@ -2,143 +2,76 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<title>Retro Emulator</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Retro Emulator Hub</title>
+
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+body {
+  margin: 0;
+  background: black;
+  color: lime;
+  font-family: monospace;
+  text-align: center;
+}
 
-  body {
-    margin: 0;
-    background: #000;
-    color: #0f0;
-    font-family: 'Press Start 2P', monospace;
-    text-align: center;
-  }
+#game {
+  width: 640px;
+  height: 480px;
+  margin: 20px auto;
+  border: 4px solid lime;
+}
 
-  h1 {
-    padding: 20px;
-    font-size: 1.5em;
-    color: #00ff00;
-    text-shadow: 0 0 5px #00ff00;
-  }
-
-  #controls {
-    margin: 20px 0;
-  }
-
-  input[type="file"] {
-    margin: 10px;
-    color: #0f0;
-    background: #111;
-    border: 2px solid #0f0;
-    padding: 5px 10px;
-    font-family: monospace;
-  }
-
-  button {
-    padding: 10px 20px;
-    font-family: monospace;
-    margin: 5px;
-    cursor: pointer;
-    background: #111;
-    color: #0f0;
-    border: 2px solid #0f0;
-    transition: 0.2s;
-  }
-
-  button:hover {
-    background: #0f0;
-    color: #000;
-  }
-
-  #emulator-container {
-    position: relative;
-    width: 80vw;
-    max-width: 640px;
-    aspect-ratio: 4/3;
-    background: black;
-    margin: 0 auto 30px auto;
-  }
-
-  #emulator-container canvas {
-    width: 100% !important;
-    height: 100% !important;
-    image-rendering: pixelated;
-  }
-
-  #message {
-    color: #0f0;
-    margin-top: 10px;
-  }
+select, input {
+  background: black;
+  color: lime;
+  border: 2px solid lime;
+  padding: 5px;
+  margin: 5px;
+}
 </style>
 </head>
+
 <body>
 
-<h1>Retro Emulator Hub</h1>
+<h1>🕹 Retro Emulator</h1>
 
-<div id="controls">
-  <input type="file" id="rom-input" accept=".nes,.sfc,.smc,.gb,.gbc,.gba,.bin,.zip">
-  <button onclick="startEmulator()">Play ROM</button>
-</div>
+<select id="system">
+  <option value="nes">NES</option>
+  <option value="snes">SNES</option>
+  <option value="gba">Game Boy Advance</option>
+  <option value="gb">Game Boy</option>
+  <option value="n64">Nintendo 64</option>
+  <option value="psx">PlayStation</option>
+  <option value="genesis">Genesis</option>
+</select>
 
-<div id="emulator-container">
-  <p id="message">Upload a ROM to start playing!</p>
-</div>
+<input type="file" id="rom" />
 
-<!-- EmulatorJS -->
-<script src="https://cdn.jsdelivr.net/gh/emulatorjs/emulatorjs@latest/dist/emulator.min.js"></script>
+<div id="game"></div>
+
+<script src="emulatorjs/loader.js"></script>
+
 <script>
-let emulator;
+document.getElementById("rom").addEventListener("change", async function () {
+  const file = this.files[0];
+  if (!file) return;
 
-function startEmulator() {
-  const fileInput = document.getElementById('rom-input');
-  if (!fileInput.files.length) {
-    alert('Please upload a ROM file!');
-    return;
-  }
+  const system = document.getElementById("system").value;
 
-  const file = fileInput.files[0];
-  const reader = new FileReader();
+  // Clear previous emulator
+  document.getElementById("game").innerHTML = "";
 
-  reader.onload = function(e) {
-    const data = e.target.result;
+  const url = URL.createObjectURL(file);
 
-    // Remove old emulator if exists
-    if (emulator) {
-      emulator.stop();
-      document.getElementById('emulator-container').innerHTML = '';
-    }
+  window.EJS_player = "#game";
+  window.EJS_gameUrl = url;
+  window.EJS_core = system;
+  window.EJS_pathtodata = "emulatorjs/data/";
+  window.EJS_startOnLoaded = true;
+  window.EJS_volume = 1;
 
-    // Detect console from file extension
-    let type = '';
-    const ext = file.name.split('.').pop().toLowerCase();
-    switch(ext) {
-      case 'nes': type = 'nes'; break;
-      case 'sfc':
-      case 'smc': type = 'snes'; break;
-      case 'gb': type = 'gb'; break;
-      case 'gbc': type = 'gbc'; break;
-      case 'gba': type = 'gba'; break;
-      default:
-        alert('Unsupported ROM format!');
-        return;
-    }
-
-    // Add a message container
-    const container = document.getElementById('emulator-container');
-    container.innerHTML = '';
-
-    // Start emulator
-    emulator = new EmulatorJS({
-      type: type,
-      rom: data,
-      parent: container,
-      autoplay: true
-    });
-  };
-
-  reader.readAsArrayBuffer(file);
-}
+  EJS_load();
+});
 </script>
 
 </body>
