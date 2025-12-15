@@ -1,40 +1,46 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Test EmulatorJS</title>
-
+<title>Retro Emulator</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
-body {
-  background: black;
-  color: white;
-  text-align: center;
-}
-#game {
-  width: 640px;
-  height: 480px;
-  margin: auto;
-  background: black;
-}
+body { background:black; color:lime; text-align:center; font-family:monospace; }
+#game { width:640px; height:480px; margin:20px auto; background:black; border:2px solid lime; }
 </style>
 </head>
-
 <body>
-
-<h1>EmulatorJS Test</h1>
+<h1>Retro Emulator Test</h1>
 <div id="game"></div>
 
+<select id="system">
+  <option value="nes">NES</option>
+  <option value="snes">SNES</option>
+  <option value="gba">GBA</option>
+</select>
+<input type="file" id="rom" />
+
 <script src="emulatorjs/loader.js"></script>
-
 <script>
-window.EJS_player = "#game";
-window.EJS_core = "nes";
-window.EJS_gameUrl = "mario.nes"; // MUST EXIST
-window.EJS_pathtodata = "emulatorjs/data/";
-window.EJS_startOnLoaded = true;
+document.getElementById("rom").addEventListener("change", function() {
+  const file = this.files[0];
+  if (!file) return;
 
-EJS_load();
+  const system = document.getElementById("system").value;
+
+  document.getElementById("game").innerHTML = "";
+
+  const url = URL.createObjectURL(file);
+
+  window.EJS_player = "#game";
+  window.EJS_gameUrl = url;
+  window.EJS_core = system;
+  window.EJS_pathtodata = "emulatorjs/data/";
+  window.EJS_startOnLoaded = true;
+  window.EJS_volume = 1;
+
+  EJS_load();
+});
 </script>
-
 </body>
 </html>
