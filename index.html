@@ -1,226 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Retro Console Emulator Hub</title>
-    <style>
-        /* Retro Theme Styling (CSS) */
-        body {
-            background-color: #2c003e; /* Dark Purple/Violet background */
-            color: #00ff41; /* Neon Green/Cyber Text */
-            font-family: 'Press Start 2P', cursive, monospace; /* Use a retro pixel font */
-            text-align: center;
-            padding: 20px;
-            margin: 0;
-            overflow-x: hidden;
-            background-image: 
-                repeating-linear-gradient(0deg, #3a0050, #3a0050 1px, transparent 1px, transparent 2px),
-                repeating-linear-gradient(90deg, #3a0050, #3a0050 1px, transparent 1px, transparent 2px);
-            background-size: 4px 4px;
-            min-height: 100vh;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retro Console Emulator Hub</title>
+<style>
+/* Retro Theme Styling */
+body {
+    background-color: #2c003e;
+    color: #00ff41;
+    font-family: 'Press Start 2P', cursive, monospace;
+    text-align: center;
+    padding: 20px;
+    margin: 0;
+    overflow-x: hidden;
+    background-image: 
+        repeating-linear-gradient(0deg, #3a0050, #3a0050 1px, transparent 1px, transparent 2px),
+        repeating-linear-gradient(90deg, #3a0050, #3a0050 1px, transparent 1px, transparent 2px);
+    background-size: 4px 4px;
+    min-height: 100vh;
+}
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
 
-        /* Import a Google Font for the retro look */
-        @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+h1 {
+    text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    letter-spacing: 2px;
+    animation: flicker 1.5s infinite alternate;
+}
+@keyframes flicker {
+    0%,18%,22%,25%,53%,57%,100%{opacity:1;}
+    20%,24%,55%{opacity:0.7;}
+}
 
-        h1 {
-            text-shadow: 0 0 5px #00ff41, 0 0 10px #00ff41;
-            margin-bottom: 30px;
-            font-size: 1.8em;
-            letter-spacing: 2px;
-            animation: flicker 1.5s infinite alternate;
-        }
+.controls {
+    background-color: #1a0028;
+    border: 2px solid #00ff41;
+    box-shadow: 0 0 10px #00ff41;
+    padding: 15px;
+    margin: 0 auto 25px auto;
+    display: inline-block;
+    border-radius: 5px;
+    max-width: 90%;
+}
 
-        @keyframes flicker {
-            0%, 18%, 22%, 25%, 53%, 57%, 100% {
-                opacity: 1;
-            }
-            20%, 24%, 55% {
-                opacity: 0.7;
-            }
-        }
+label, button, select, input[type="file"] {
+    display: block;
+    margin: 10px 0;
+    color: #00ff41;
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 0.8em;
+}
 
-        .controls {
-            background-color: #1a0028; /* Darker control panel */
-            border: 2px solid #00ff41;
-            box-shadow: 0 0 10px #00ff41;
-            padding: 15px;
-            margin: 0 auto 25px auto;
-            display: inline-block;
-            border-radius: 5px;
-            max-width: 90%;
-        }
+select, input[type="file"] {
+    border: 1px solid #00ff41;
+    background-color: #0d0014;
+    padding: 5px;
+    border-radius: 3px;
+    color: #00ff41;
+    cursor: pointer;
+}
 
-        label, button, select, input[type="file"] {
-            display: block;
-            margin: 10px 0;
-            color: #00ff41;
-            background: none;
-            border: none;
-            padding: 0;
-            font-size: 0.8em;
-        }
+button {
+    background-color: #008f2c;
+    color: black;
+    padding: 8px 15px;
+    border: 2px solid #00ff41;
+    box-shadow: 0 0 5px #00ff41;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-family: 'Press Start 2P', cursive, monospace;
+    margin-top: 20px;
+}
 
-        select, input[type="file"] {
-            border: 1px solid #00ff41;
-            background-color: #0d0014;
-            padding: 5px;
-            border-radius: 3px;
-            color: #00ff41;
-            cursor: pointer;
-        }
-        
-        button {
-            background-color: #008f2c; /* A solid green for buttons */
-            color: black;
-            padding: 8px 15px;
-            border: 2px solid #00ff41;
-            box-shadow: 0 0 5px #00ff41;
-            cursor: pointer;
-            transition: background-color 0.2s;
-            font-family: 'Press Start 2P', cursive, monospace;
-            margin-top: 20px;
-        }
+button:hover {
+    background-color: #00ff41;
+    color: #2c003e;
+}
 
-        button:hover {
-            background-color: #00ff41;
-            color: #2c003e;
-        }
+#game {
+    width: 800px;
+    height: 600px;
+    margin: 20px auto;
+    border: 5px solid #00ff41;
+    box-shadow: 0 0 20px #00ff41;
+    background-color: #000;
+    max-width: 95%;
+}
 
-        #game {
-            width: 800px;
-            height: 600px;
-            margin: 20px auto;
-            border: 5px solid #00ff41;
-            box-shadow: 0 0 20px #00ff41;
-            background-color: #000;
-            max-width: 95%;
-        }
-
-        /* Hide the initial "No file selected" text for cleaner look */
-        input[type="file"]::-webkit-file-upload-button {
-            visibility: hidden;
-        }
-        input[type="file"]::before {
-            content: 'Select ROM File';
-            display: inline-block;
-            background: #0d0014;
-            border: 1px solid #00ff41;
-            padding: 5px 8px;
-            outline: none;
-            white-space: nowrap;
-            cursor: pointer;
-            text-shadow: 1px 1px #000;
-            font-weight: 700;  
-            font-size: 0.8em;
-        }
-        input[type="file"]:hover::before {
-            border-color: #00ff41;
-        }
-        
-    </style>
+input[type="file"]::-webkit-file-upload-button {
+    visibility: hidden;
+}
+input[type="file"]::before {
+    content: 'Select ROM File';
+    display: inline-block;
+    background: #0d0014;
+    border: 1px solid #00ff41;
+    padding: 5px 8px;
+    outline: none;
+    white-space: nowrap;
+    cursor: pointer;
+    text-shadow: 1px 1px #000;
+    font-weight: 700;  
+    font-size: 0.8em;
+}
+input[type="file"]:hover::before {
+    border-color: #00ff41;
+}
+</style>
 </head>
 <body>
 
-    <audio id="retro_audio" loop>
-        <source src="your_retro_soundtrack.mp3" type="audio/mp3">
-        Your browser does not support the audio element.
-    </audio>
+<audio id="retro_audio" loop>
+    <source src="your_retro_soundtrack.mp3" type="audio/mp3">
+    Your browser does not support the audio element.
+</audio>
 
-    <h1>👾 RETRO ARCADE HUB 👾</h1>
+<h1>👾 RETRO ARCADE HUB 👾</h1>
+
+<div class="controls">
+    <label for="system">CHOOSE CONSOLE:</label>
+    <select id="system">
+        <option value="nes">Nintendo Entertainment System (NES)</option>
+        <option value="snes">Super Nintendo (SNES)</option>
+        <option value="gb">Game Boy (GB)</option>
+        <option value="gba">Game Boy Advance (GBA)</option>
+        <option value="n64">Nintendo 64 (N64)</option>
+        <option value="psx">PlayStation 1 (PSX)</option>
+        <option value="sega-genesis">Sega Genesis/Mega Drive</option>
+        <option value="atari2600">Atari 2600</option>
+    </select>
     
-    <div class="controls">
-        <label for="system">CHOOSE CONSOLE:</label>
-        <select id="system">
-            <option value="nes">Nintendo Entertainment System (NES)</option>
-            <option value="snes">Super Nintendo (SNES)</option>
-            <option value="gb">Game Boy (GB)</option>
-            <option value="gba">Game Boy Advance (GBA)</option>
-            <option value="n64">Nintendo 64 (N64)</option>
-            <option value="psx">PlayStation 1 (PSX)</option>
-            <option value="sega-genesis">Sega Genesis/Mega Drive</option>
-            <option value="atari2600">Atari 2600</option>
-        </select>
-        
-        <label for="rom">LOAD ROM:</label>
-        <input type="file" id="rom" accept=".nes, .smc, .gb, .gba, .n64, .bin, .gen, .a26">
-        
-        <button onclick="goFullscreen()">GO FULLSCREEN</button>
-        <button onclick="toggleAudio()">SOUND: OFF</button>
-    </div>
+    <label for="rom">LOAD ROM:</label>
+    <input type="file" id="rom" accept=".nes,.smc,.gb,.gba,.n64,.bin,.gen,.a26">
+    
+    <button onclick="goFullscreen()">GO FULLSCREEN</button>
+    <button onclick="toggleAudio()">SOUND: OFF</button>
+</div>
 
-    <div id="game">
-        <p>Emulator screen will appear here after loading a ROM...</p>
-    </div>
+<div id="game">
+    <p>Emulator screen will appear here after loading a ROM...</p>
+</div>
 
-    <script>
-        const audio = document.getElementById("retro_audio");
-        const audioButton = document.querySelector(".controls button:last-of-type");
+<script>
+const audio = document.getElementById("retro_audio");
+const audioButton = document.querySelector(".controls button:last-of-type");
 
-        // --- Sound Control Function ---
-        function toggleAudio() {
-            if (audio.paused) {
-                // Try to play the audio
-                audio.play().then(() => {
-                    audioButton.textContent = "SOUND: ON";
-                }).catch(error => {
-                    console.log("Audio play failed (user gesture required):", error);
-                    alert("Sound requires user interaction first. Please click again.");
-                });
-            } else {
-                audio.pause();
-                audioButton.textContent = "SOUND: OFF";
-            }
-        }
-        
-        // --- Fullscreen Function (Existing) ---
-        function goFullscreen() {
-            const el = document.getElementById("game");
-            if (el.requestFullscreen) el.requestFullscreen();
-            else if (el.mozRequestFullScreen) el.mozRequestFullScreen(); // Firefox
-            else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen(); // Chrome, Safari, Opera
-            else if (el.msRequestFullscreen) el.msRequestFullscreen(); // IE/Edge
-        }
+function toggleAudio() {
+    if(audio.paused){
+        audio.play().then(()=>{ audioButton.textContent="SOUND: ON"; })
+        .catch(()=>{ alert("Click again to enable sound."); });
+    } else {
+        audio.pause();
+        audioButton.textContent="SOUND: OFF";
+    }
+}
 
-        // --- ROM Loading Logic (Updated) ---
-        document.getElementById("rom").addEventListener("change", function(e) {
-            const file = e.target.files[0];
-            if (!file) return;
+function goFullscreen() {
+    const el = document.getElementById("game");
+    if(el.requestFullscreen) el.requestFullscreen();
+    else if(el.mozRequestFullScreen) el.mozRequestFullScreen();
+    else if(el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if(el.msRequestFullscreen) el.msRequestFullscreen();
+}
 
-            document.getElementById("game").innerHTML = ""; // Clear previous content
+// ROM Loader
+document.getElementById("rom").addEventListener("change", function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    
+    const system = document.getElementById("system").value;
+    const url = URL.createObjectURL(file);
+    
+    // Clear previous content
+    document.getElementById("game").innerHTML = "";
+    
+    // Remove old loader script
+    const oldScript = document.getElementById("ejs");
+    if(oldScript) oldScript.remove();
+    
+    // Config
+    window.EJS_player = "#game";
+    window.EJS_gameUrl = url;
+    window.EJS_core = system;
+    window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
+    window.EJS_startOnLoaded = true;
+    window.EJS_disableDatabases = true;
+    
+    // BIOS URLs (fill in if needed for GBA/PSX/N64)
+    window.EJS_biosUrl = "";
+    
+    // Load EmulatorJS
+    const script = document.createElement("script");
+    script.src = "https://cdn.emulatorjs.org/stable/loader.js";
+    script.id = "ejs";
+    document.body.appendChild(script);
+    
+    if(audio.paused) toggleAudio();
+});
+</script>
 
-            const url = URL.createObjectURL(file);
-            const system = document.getElementById("system").value;
-
-            // REQUIRED EmulatorJS config
-            window.EJS_player = "#game";
-            window.EJS_gameUrl = url;
-            window.EJS_core = system;
-            window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
-            window.EJS_startOnLoaded = true;
-            
-            // Bios is often required for PSX, N64, GBA.
-            // Replace with your actual BIOS link if needed, or leave blank.
-            window.EJS_biosUrl = ""; 
-            
-            window.EJS_disableDatabases = true;
-
-            // Remove old loader script before loading new one
-            const old = document.getElementById("ejs");
-            if (old) old.remove();
-
-            // Load EmulatorJS AFTER config
-            const script = document.createElement("script");
-            script.src = "https://cdn.emulatorjs.org/stable/data/loader.js";
-            script.id = "ejs";
-            document.body.appendChild(script);
-
-            // OPTIONAL: Start the retro music when the game loads
-            if (audio.paused) {
-                toggleAudio(); 
-            }
-        });
-    </script>
 </body>
 </html>
