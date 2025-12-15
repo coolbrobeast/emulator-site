@@ -151,28 +151,21 @@ input[type="file"]:hover::before { border-color: #00ff41; }
 const audio = document.getElementById("retro_audio");
 let audioUnlocked = false;
 
-function unlockAudio() {
+document.addEventListener('click', () => {
     if(!audioUnlocked){
         audio.play().catch(()=>{});
         audio.pause();
         audioUnlocked = true;
-        document.removeEventListener('click', unlockAudio);
-        document.removeEventListener('keydown', unlockAudio);
     }
-}
-document.addEventListener('click', unlockAudio);
-document.addEventListener('keydown', unlockAudio);
+});
 
-// Fullscreen button only works in secure contexts and with user gesture
+// Fullscreen button
 document.getElementById('fullscreen-btn').addEventListener('click', function() {
     const el = document.getElementById("game");
-    const requestFS = el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen || el.msRequestFullscreen;
-    if(requestFS) {
-        requestFS.call(el).catch(e => {
-            console.warn('Fullscreen blocked:', e);
-            alert('Fullscreen not allowed.');
-        });
-    }
+    if (el.requestFullscreen) el.requestFullscreen();
+    else if (el.webkitRequestFullscreen) el.webkitRequestFullscreen();
+    else if (el.mozRequestFullScreen) el.mozRequestFullScreen();
+    else if (el.msRequestFullscreen) el.msRequestFullscreen();
 });
 
 const BIOS_URLS = {
@@ -182,8 +175,9 @@ const BIOS_URLS = {
     neogeo: "https://cdn.jsdelivr.net/npm/emulatorjs@latest/data/bios/neogeo.zip"
 };
 
-// Load ROM using EmulatorJS loader from official CDN
-document.getElementById("rom").addEventListener("change", function(e){
+// Load ROM
+const romInput = document.getElementById("rom");
+romInput.addEventListener("change", function(e){
     const file = e.target.files[0];
     if(!file) return;
 
@@ -193,13 +187,6 @@ document.getElementById("rom").addEventListener("change", function(e){
     document.getElementById("game").innerHTML = "";
     document.getElementById("rom-info").textContent = `Loaded: ${file.name} | System: ${system.toUpperCase()}`;
 
-    if(audioUnlocked) audio.play().catch(()=>{});
-
-    // Remove previous loader if exists
-    const oldScript = document.getElementById("ejs");
-    if(oldScript) oldScript.remove();
-
-    // Configure EmulatorJS globals
     window.EJS_player = "#game";
     window.EJS_gameUrl = url;
     window.EJS_core = system;
@@ -208,10 +195,23 @@ document.getElementById("rom").addEventListener("change", function(e){
     window.EJS_disableDatabases = true;
     window.EJS_biosUrl = BIOS_URLS[system] || "";
 
-    // Append loader.js from official CDN
+    // Remove old loader if exists
+    const oldScript = document.getElementById("ejs");
+    if(oldScript) oldScript.remove();
+
+    // Use official loader from CDNJS which is verified
     const script = document.createElement("script");
     script.src = "https://cdn.jsdelivr.net/npm/emulatorjs@latest/loader.js";
     script.id = "ejs";
+    script.onload = () => {
+        console.log('EmulatorJS loaded');
+        if(typeof EmulatorJS === 'undefined') {
+            document.getElementById('game').innerHTML = '<p style="color:red;">EmulatorJS failed to load. Check console for errors.</p>';
+        }
+    };
+    script.onerror = () => {
+        document.getElementById('game').innerHTML = '<p style="color:red;">Failed to load EmulatorJS script. Check your internet connection.</p>';
+    };
     document.body.appendChild(script);
 });
 </script>
