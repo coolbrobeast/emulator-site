@@ -1,58 +1,3 @@
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title>Web Emulator</title>
-
-<style>
-body {
-  margin: 0;
-  background: #000;
-  color: white;
-  font-family: Arial, sans-serif;
-  text-align: center;
-}
-
-#controls {
-  padding: 10px;
-  background: #111;
-}
-
-select, input, button {
-  padding: 8px;
-  margin: 5px;
-  font-size: 16px;
-}
-
-#game {
-  width: 100%;
-  height: 80vh;
-}
-</style>
-</head>
-
-<body>
-
-<h2>🎮 Web Emulator</h2>
-
-<div id="controls">
-  <select id="system">
-    <option value="nes">NES</option>
-    <option value="snes">SNES</option>
-    <option value="gb">Game Boy</option>
-    <option value="gbc">Game Boy Color</option>
-    <option value="gba">Game Boy Advance</option>
-    <option value="md">Sega Genesis</option>
-    <option value="n64">Nintendo 64</option>
-    <option value="psx">PlayStation 1</option>
-  </select>
-
-  <input type="file" id="rom" />
-  <button onclick="goFullscreen()">Fullscreen</button>
-</div>
-
-<div id="game"></div>
-
 <script>
 function goFullscreen() {
   const el = document.getElementById("game");
@@ -63,22 +8,23 @@ document.getElementById("rom").addEventListener("change", function(e) {
   const file = e.target.files[0];
   if (!file) return;
 
-  // Clear old emulator
   document.getElementById("game").innerHTML = "";
 
   const url = URL.createObjectURL(file);
   const system = document.getElementById("system").value;
 
-  // EmulatorJS config (MUST be set BEFORE loading script)
+  // REQUIRED EmulatorJS config
   window.EJS_player = "#game";
   window.EJS_gameUrl = url;
   window.EJS_core = system;
   window.EJS_pathtodata = "https://cdn.emulatorjs.org/stable/data/";
   window.EJS_startOnLoaded = true;
+  window.EJS_biosUrl = ""; // IMPORTANT for NES
+  window.EJS_disableDatabases = true;
 
-  // Remove old loader if exists
-  const oldScript = document.getElementById("ejs");
-  if (oldScript) oldScript.remove();
+  // Remove old loader
+  const old = document.getElementById("ejs");
+  if (old) old.remove();
 
   // Load EmulatorJS AFTER config
   const script = document.createElement("script");
@@ -87,6 +33,3 @@ document.getElementById("rom").addEventListener("change", function(e) {
   document.body.appendChild(script);
 });
 </script>
-
-</body>
-</html>
