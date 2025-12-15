@@ -148,7 +148,7 @@ function loadEmulatorJS(url, system) {
   window.EJS_player = "#game";
   window.EJS_gameUrl = url;
   window.EJS_core = system;
-  window.EJS_pathtodata = "./data/"; // Use local relative path for WASM
+  window.EJS_pathtodata = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@stable/data/"; // CDN path
   window.EJS_startOnLoaded = true;
   window.EJS_muteOnStart = muted;
   window.EJS_biosUrl = "";
@@ -157,13 +157,14 @@ function loadEmulatorJS(url, system) {
   if (currentScript) currentScript.remove();
 
   const script = document.createElement("script");
-  script.src = "./loader.js"; // Use local loader.js to ensure WASM can be fetched
+  script.src = "https://cdn.jsdelivr.net/gh/EmulatorJS/EmulatorJS@stable/data/loader.js"; // Use CDN loader.js
   script.id = "ejs";
   script.onload = () => {
     if (window.EmulatorJS) {
       window.EJS_playerInstance = window.EmulatorJS;
-      if (typeof window.EmulatorJS.start === 'function') {
-        window.EmulatorJS.start().catch(err => console.error('EmulatorJS failed to start:', err));
+      // Some cores require manual initialization
+      if (typeof window.EmulatorJS.initCore === 'function') {
+        window.EmulatorJS.initCore(system).catch(err => console.error('Failed to load core:', err));
       }
     }
   };
